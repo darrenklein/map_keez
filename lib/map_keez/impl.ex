@@ -1,7 +1,5 @@
 defmodule MapKeez.Impl do
-  @moduledoc """
-
-  """
+  @moduledoc false
 
   alias MapKeez.KeyConverter
 
@@ -15,6 +13,9 @@ defmodule MapKeez.Impl do
     map
     |> do_convert_map_keys(target_type, opts)
   end
+
+  # Structs and their contents will not be modified.
+  defp do_convert_map_keys(%_{} = struct, _, _), do: struct
 
   defp do_convert_map_keys(%{} = map, target_type, opts) do
     map

@@ -1,6 +1,6 @@
 defmodule MapKeez do
   @moduledoc """
-
+  Convert string map keys to atoms or vice-versa.
   """
 
   alias MapKeez.Impl

@@ -1,4 +1,8 @@
 defprotocol MapKeez.KeyConverter do
+  @doc """
+  Converts a map key value to a target type, either a string or an atom.
+  """
+
   alias MapKeez.Impl
 
   @spec maybe_convert_key(String.t() | atom(), Impl.target_type()) :: String.t() | atom()
