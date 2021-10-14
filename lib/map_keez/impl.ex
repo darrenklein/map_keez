@@ -3,6 +3,10 @@ defmodule MapKeez.Impl do
 
   """
 
+  alias MapKeez.KeyConverter
+
+  @type target_type :: :string | :existing_atom | :atom
+
   @default_opts [recursive: false]
 
   def convert_map_keys(map, target_type, opts) do
@@ -12,12 +16,13 @@ defmodule MapKeez.Impl do
     |> do_convert_map_keys(target_type, opts)
   end
 
-  defp do_convert_map_keys(%{} = map, :string, opts) do
+  defp do_convert_map_keys(%{} = map, target_type, opts) do
     map
     |> Map.new(fn {key, val} ->
-      val = if Keyword.get(opts, :recursive), do: do_convert_map_keys(val, :string, opts), else: val
+      val =
+        if Keyword.get(opts, :recursive), do: do_convert_map_keys(val, :string, opts), else: val
 
-      {maybe_to_string(key), val}
+      {KeyConverter.maybe_convert_key(key, target_type), val}
     end)
   end
 
@@ -26,18 +31,5 @@ defmodule MapKeez.Impl do
     |> Enum.map(&do_convert_map_keys(&1, target_type, opts))
   end
 
-
   defp do_convert_map_keys(val, _, _), do: val
-
-  # defp do_convert_map_keys(map, :existing_atom, opts) do
-
-  # end
-
-  # defp do_convert_map_keys(map, :atom, opts) do
-
-  # end
-
-  defp maybe_to_string(key) when is_bitstring(key), do: key
-
-  defp maybe_to_string(key) when is_atom(key), do: Atom.to_string(key)
 end
