@@ -3,10 +3,9 @@ defmodule MapKeez.Impl do
 
   alias MapKeez.KeyConverter
 
-  @type target_type :: :string | :existing_atom | :atom
-
   @default_opts [recursive: false]
 
+  @spec convert_map_keys(map(), MapKeez.target_type(), MapKeez.opts()) :: map()
   def convert_map_keys(map, target_type, opts) do
     opts = Keyword.merge(@default_opts, opts)
 
@@ -14,6 +13,7 @@ defmodule MapKeez.Impl do
     |> do_convert_map_keys(target_type, opts)
   end
 
+  @spec do_convert_map_keys(any(), MapKeez.target_type(), MapKeez.opts()) :: map()
   # Structs and their contents will not be modified.
   defp do_convert_map_keys(%_{} = struct, _, _), do: struct
 
