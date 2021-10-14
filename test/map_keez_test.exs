@@ -99,4 +99,46 @@ defmodule MapKeezTest do
       assert %{blah: "blah"} == to_atom_keys_unsafe(map)
     end
   end
+
+  describe "raises on invalid argument" do
+    test "atom" do
+      assert_raise FunctionClauseError,
+                   "no function clause matching in MapKeez.to_string_keys/2",
+                   fn ->
+                     to_string_keys(:an_atom)
+                   end
+    end
+
+    test "string" do
+      assert_raise FunctionClauseError,
+                   "no function clause matching in MapKeez.to_atom_keys!/2",
+                   fn ->
+                     to_atom_keys!("a string")
+                   end
+    end
+
+    test "boolean" do
+      assert_raise FunctionClauseError,
+                   "no function clause matching in MapKeez.to_atom_keys_unsafe/2",
+                   fn ->
+                     to_atom_keys_unsafe(true)
+                   end
+    end
+
+    test "integer" do
+      assert_raise FunctionClauseError,
+                   "no function clause matching in MapKeez.to_atom_keys_unsafe/2",
+                   fn ->
+                     to_atom_keys_unsafe(1)
+                   end
+    end
+
+    test "list" do
+      assert_raise FunctionClauseError,
+                   "no function clause matching in MapKeez.to_string_keys/2",
+                   fn ->
+                     to_string_keys([:moo, :cow])
+                   end
+    end
+  end
 end

@@ -21,7 +21,7 @@ defmodule MapKeez do
   end
 
   @spec to_atom_keys_unsafe(map(), opts) :: %{atom() => any()}
-  def to_atom_keys_unsafe(map, opts \\ []) do
+  def to_atom_keys_unsafe(%{} = map, opts \\ []) do
     map
     |> convert_map_keys(:atom, opts)
   end
