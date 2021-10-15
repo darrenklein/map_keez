@@ -6,7 +6,7 @@ Convert map keys from atom to string or string to atom.
 
 ## Use
 
-**MapKeez** provides three methods for converting the keys of a map between strings and atoms -
+**MapKeez** provides three methods for converting the keys of a map between strings and atoms. By default, only the top-level keys of a map will be converted, and struct keys will not be converted - however, these behaviors can both be modified using the options found under the [Options](#options) section below.
 
 #### to_string_keys/2
 
@@ -15,6 +15,7 @@ Convert atom keys to string keys.
 ```elixir
 (1)> map = %{foo: "bar", baz: "bim"}
 %{baz: "bim", foo: "bar"}
+
 (2)> map |> MapKeez.to_string_keys()
 %{"baz" => "bim", "foo" => "bar"}
 ```
@@ -26,6 +27,7 @@ Safely convert string keys to atom keys by way of `String.to_existing_atom()`. T
 ```elixir
 (1)> map = %{"foo" => "bar", "baz" => "bim"}
 %{"baz" => "bim", "foo" => "bar"}
+
 (2)> map |> MapKeez.to_atom_keys!()
 ** (ArgumentError) errors were found at the given arguments:
 
@@ -35,8 +37,10 @@ Safely convert string keys to atom keys by way of `String.to_existing_atom()`. T
 ```elixir
 (1)> _safe_atoms = [:foo, :baz]
 [:foo, :baz]
+
 (2)> map = %{"foo" => "bar", "baz" => "bim"}
 %{"baz" => "bim", "foo" => "bar"}
+
 (3)> map |> MapKeez.to_atom_keys!()
 %{baz: "bim", foo: "bar"}
 ```
@@ -48,16 +52,73 @@ As the name implies, unsafely convert string keys to atom keys by way of `String
 ```elixir
 (1)> map = %{"foo" => "bar", "baz" => "bim"}
 %{"baz" => "bim", "foo" => "bar"}
+
 (2)> map |> MapKeez.to_atom_keys_unsafe()
 %{baz: "bim", foo: "bar"}
 ```
 
 ### Options
 
-`recursive :: boolean`
+`recursive :: boolean - default: false`
 
-### Notes
+The default behavior of **MapKeez**'s methods is to convert top-level map keys. If you have a nested structure for which you need to convert all map keys that occur within that structure, use the `recursive: true` option. This option will recurse through any nested maps or lists (but not structs - see `convert_structs` option below), converting any map keys found along the way.
 
-#### Structs
+```elixir
+(1)> map = %{foo: "bar", baz: [%{bim: "bang", moo: %{mar: [%{"maz" => "ming"}, %{mong: "moon"}]}}]}
+%{
+  baz: [%{bim: "bang", moo: %{mar: [%{"maz" => "ming"}, %{mong: "moon"}]}}],
+  foo: "bar"
+}
 
-Struct keys will not be converted by **MapKeez**. This applies to any map keys found within maps or lists within a struct as well, in the event that you should provide the `[recursive: true]` option.
+(2)> map |> MapKeez.to_string_keys([recursive: true])
+%{
+  "baz" => [
+    %{
+      "bim" => "bang",
+      "moo" => %{"mar" => [%{"maz" => "ming"}, %{"mong" => "moon"}]}
+    }
+  ],
+  "foo" => "bar"
+}
+```
+
+`convert_structs :: boolean - default: false`
+
+When encountering a struct, the default behavior of **MapKeez** is to avoid altering the struct or its contents in any way - this applies even in cases where `recursive` is set to `true`. If you wish to convert the keys of structs, set the `convert_structs` option to `true`. **Beware that setting this option to `true` will result in the conversion of structs to maps, even in cases where keys are being converted to atoms.**
+
+```elixir
+(1)> %MapKeezTest.Assets.TestStruct{}
+%MapKeezTest.Assets.TestStruct{
+  atom_key_attributes: %{eye_color: "purple"},
+  name: "Bob",
+  string_key_attributes: %{"height" => 10}
+}
+
+(2)> %MapKeezTest.Assets.TestStruct{} |> MapKeez.to_string_keys([convert_structs: true])
+%{
+  "atom_key_attributes" => %{eye_color: "purple"},
+  "name" => "Bob",
+  "string_key_attributes" => %{"height" => 10}
+}
+
+(3)> %MapKeezTest.Assets.TestStruct{} |> MapKeez.to_atom_keys!([convert_structs: true])
+%{
+  atom_key_attributes: %{eye_color: "purple"},
+  name: "Bob",
+  string_key_attributes: %{"height" => 10}
+}
+
+(4)> %MapKeezTest.Assets.TestStruct{} |> MapKeez.to_string_keys([convert_structs: true, recursive: true])
+%{
+  "atom_key_attributes" => %{"eye_color" => "purple"},
+  "name" => "Bob",
+  "string_key_attributes" => %{"height" => 10}
+}
+
+(5)> %MapKeezTest.Assets.TestStruct{} |> MapKeez.to_atom_keys_unsafe([convert_structs: true, recursive: true])
+%{
+  atom_key_attributes: %{eye_color: "purple"},
+  name: "Bob",
+  string_key_attributes: %{height: 10}
+}
+```

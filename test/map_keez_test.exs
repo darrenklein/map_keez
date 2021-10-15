@@ -18,39 +18,7 @@ defmodule MapKeezTest do
         "moo" => "mar"
       }
 
-      assert %{"foo" => "bar", "baz" => %{bim: "blam"}, "moo" => "mar"} == to_string_keys(map)
-    end
-
-    test "recursively converts all atom keys in a map structure to strings; structs and their contents will not be converted" do
-      map = %{
-        :foo => "bar",
-        :baz => %{
-          bim: "blam"
-        },
-        "moo" => [
-          %{:hello => "hello"},
-          %{"goodbye" => "goodbye"},
-          %TestStruct{},
-          :foo
-        ]
-      }
-
-      assert %{
-               "foo" => "bar",
-               "baz" => %{
-                 "bim" => "blam"
-               },
-               "moo" => [
-                 %{"hello" => "hello"},
-                 %{"goodbye" => "goodbye"},
-                 %TestStruct{
-                   atom_key_attributes: %{eye_color: "purple"},
-                   name: "Bob",
-                   string_key_attributes: %{"height" => 10}
-                 },
-                 :foo
-               ]
-             } == to_string_keys(map, recursive: true)
+      assert %{"foo" => map[:foo], "baz" => map[:baz], "moo" => map["moo"]} == to_string_keys(map)
     end
   end
 
@@ -76,7 +44,9 @@ defmodule MapKeezTest do
 
       map = %{
         "existing_key_a" => "I exist",
-        "existing_key_b" => "I, too, exist"
+        "existing_key_b" => %{
+          "non_existing_key" => "I'm not converted anyway, so no problem"
+        }
       }
 
       assert %{
@@ -93,11 +63,56 @@ defmodule MapKeezTest do
 
     test "unsafely converts top-level map keys from strings to atoms" do
       map = %{
-        "blah" => "blah"
+        "blah" => "blah",
+        "mwah" => %{
+          "chicken" => "wizard"
+        }
       }
 
-      assert %{blah: "blah"} == to_atom_keys_unsafe(map)
+      assert %{blah: map["blah"], mwah: map["mwah"]} == to_atom_keys_unsafe(map)
     end
+  end
+
+  describe "options" do
+    test "recursive and convert_structs options allow a struct and any nested maps to have their keys converted" do
+      assert %{
+               atom_key_attributes: %{eye_color: "purple"},
+               name: "Bob",
+               string_key_attributes: %{height: 10}
+             } == %TestStruct{} |> MapKeez.to_atom_keys!(recursive: true, convert_structs: true)
+    end
+
+    # test "recursively converts all atom keys in a map structure to strings; structs and their contents will not be converted" do
+    #   map = %{
+    #     :foo => "bar",
+    #     :baz => %{
+    #       bim: "blam"
+    #     },
+    #     "moo" => [
+    #       %{:hello => "hello"},
+    #       %{"goodbye" => "goodbye"},
+    #       %TestStruct{},
+    #       :foo
+    #     ]
+    #   }
+
+    #   assert %{
+    #            "foo" => "bar",
+    #            "baz" => %{
+    #              "bim" => "blam"
+    #            },
+    #            "moo" => [
+    #              %{"hello" => "hello"},
+    #              %{"goodbye" => "goodbye"},
+    #              %TestStruct{
+    #                atom_key_attributes: %{eye_color: "purple"},
+    #                name: "Bob",
+    #                string_key_attributes: %{"height" => 10}
+    #              },
+    #              :foo
+    #            ]
+    #          } == to_string_keys(map, recursive: true)
+    # end
   end
 
   describe "raises on invalid argument" do
