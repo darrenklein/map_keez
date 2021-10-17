@@ -140,6 +140,6 @@ iex(5)> map |> MapKeez.to_string_keys()
 %{"foo" => "bar"}
 ```
 
-#### :convert_structs option converts structs to maps
+#### `:convert_structs` option converts structs to maps
 
 This was mentioned earlier in the README, but it warrants reiterating - passing the `convert_structs: true` option will have the affect of converting any encountered structs to a map.
