@@ -71,15 +71,36 @@ defmodule MapKeezTest do
 
       assert %{blah: map["blah"], mwah: map["mwah"]} == to_atom_keys_unsafe(map)
     end
+
+    test "raises if a string key exceeds the system limit size for an atom" do
+      map = %{
+        "long_key_coming_up" => %{
+          "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" =>
+            "moo"
+        }
+      }
+
+      assert_raise SystemLimitError,
+                   "a system limit has been reached",
+                   fn ->
+                     map
+                     |> to_atom_keys_unsafe(recursive: true)
+                   end
+    end
   end
 
   describe "options" do
-    test "recursive and convert_structs options allow a struct and any nested maps to have their keys converted" do
+    test "recursive option converts all keys found within a map and its nested structures; structs will not be affected" do
+    end
+
+    test "recursive and convert_structs options allow keys of a struct and any nested maps to be converted" do
+      struct = %TestStruct{}
+
       assert %{
-               atom_key_attributes: %{eye_color: "purple"},
+               atom_key_attributes: %{eye_color: struct.atom_key_attributes.eye_color},
                name: "Bob",
-               string_key_attributes: %{height: 10}
-             } == %TestStruct{} |> MapKeez.to_atom_keys!(recursive: true, convert_structs: true)
+               string_key_attributes: %{height: struct.string_key_attributes["height"]}
+             } == struct |> to_atom_keys!(recursive: true, convert_structs: true)
     end
 
     # test "recursively converts all atom keys in a map structure to strings; structs and their contents will not be converted" do

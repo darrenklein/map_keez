@@ -6,6 +6,8 @@ defmodule MapKeez.Impl do
   @default_opts [recursive: false, convert_structs: false]
 
   @spec convert_map_keys(map(), MapKeez.target_type(), MapKeez.opts()) :: map()
+  def convert_map_keys(map, _, _) when map == %{}, do: map
+
   def convert_map_keys(map, target_type, opts) do
     opts = Keyword.merge(@default_opts, opts)
 
